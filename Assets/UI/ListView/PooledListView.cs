@@ -53,8 +53,8 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
         ScrollRect.onValueChanged.AddListener(OnDragDetectionPositionChange);
 
         this.data = data;
-        int Length = data.Length;
-        DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, Length * ItemHeight + (Length - 1) * spacing);
+        int length = data.Length;
+        DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, length * ItemHeight + (length - 1) * spacing);
         IListViewItem[][] components = new IListViewItem[TargetVisibleItemCount + BufferSize][];
 
         for (int i = 0; i < TargetVisibleItemCount + BufferSize; i++)
@@ -71,11 +71,36 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
             dataTail++;
         }
 
-        for (int i = 0; i < data.Length; i++)
+        for (int i = 0; i < length; i++)
         {
             int itemType = data[i].GetItemType(); 
             modelToItem.Add(data[i], components[i % components.Length][itemType]);
         }
+    }
+
+    /// <summary>
+    /// This method will be returning IListViewItem with
+    /// respect to given model.
+    /// </summary>
+    /// <returns>Matched IListViewItem</returns>
+    public IListViewItem GetItem(IListViewItemModel itemModel)
+    {
+        return modelToItem[itemModel];
+    }
+
+    /// <summary>
+    /// This method will return an array of IListViewItem that is visible.
+    /// Thus we can update it or we can do whatever we want.
+    /// </summary>
+    /// <returns></returns>
+    public IListViewItem[] GetVisibleItems()
+    {
+        IListViewItem[] items = new IListViewItem[dataTail - dataHead + 1];
+        for(int i = dataHead; i <= dataTail; ++i)
+        {
+            items[i - dataHead] = modelToItem[data[i]];
+        }
+        return items;
     }
 
 
