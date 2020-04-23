@@ -2,42 +2,46 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ListViewItemPool : MonoBehaviour {
+public class ListViewItemPool : MonoBehaviour
+{
 
-   [SerializeField] int PoolSize = 1;
-   [SerializeField] GameObject PoolObjectPrefab;
+    [SerializeField] int PoolSize = 1;
+    [SerializeField] GameObject PoolObjectPrefab;
 
-   int head = 0;
+    int head = 0;
 
-   void Awake()
-   {
-      head = 0;
+    void Awake()
+    {
+        head = 0;
 
-      for(int i = 0; i < PoolSize; i++) {
-         GameObject poolObj = Instantiate(PoolObjectPrefab) as GameObject;
-         poolObj.transform.SetParent(this.transform);
-         poolObj.SetActive(false);
-      }
-   }
+        for (int i = 0; i < PoolSize; i++)
+        {
+            GameObject poolObj = Instantiate(PoolObjectPrefab, this.transform) as GameObject;
 
-   public GameObject ItemBorrow()
-   {
-      if(head >= PoolSize) {
-         return null;
-      }
+            poolObj.SetActive(false);
+        }
+    }
 
-      head++;
-      return this.transform.GetChild(0).gameObject;
-   }
+    public GameObject ItemBorrow()
+    {
+        if (head >= PoolSize)
+        {
+            return null;
+        }
 
-   public void ItemReturn(GameObject go)
-   {
-      if(head <= 0) {
-         return;
-      }
+        head++;
+        return this.transform.GetChild(0).gameObject;
+    }
 
-      head--;
-      go.SetActive(false);
-      go.transform.SetParent(this.transform);
-   }
+    public void ItemReturn(GameObject go)
+    {
+        if (head <= 0)
+        {
+            return;
+        }
+
+        head--;
+        go.SetActive(false);
+        go.transform.SetParent(this.transform);
+    }
 }

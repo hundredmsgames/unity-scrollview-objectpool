@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class ListViewItemModel
+public class ListViewItemModel<T> where T : new()
 {
-    public System.Object Data { get { return data; } }
+    public T Data { get { return data; } }
 
-    System.Object data;
+    T data;
 
-    public ListViewItemModel(System.Object data)
+    public ListViewItemModel(T data)
     {
         this.data = data;
     }

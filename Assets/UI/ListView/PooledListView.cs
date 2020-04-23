@@ -29,9 +29,9 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     #region Layout Variables
 
+    float spacing { get { return ContentT.GetComponent<VerticalLayoutGroup>().spacing; } }
     int TargetVisibleItemCount { get { return Mathf.Max(Mathf.CeilToInt(viewPortT.rect.height / ItemHeight), 0); } }
-    int TopItemOutOfView { get { return Mathf.CeilToInt(ContentT.anchoredPosition.y / ItemHeight); } }
-
+    int TopItemOutOfView { get { return Mathf.CeilToInt(ContentT.anchoredPosition.y / (ItemHeight + spacing)); } }
     float dragDetectionAnchorPreviousY = 0;
 
     #endregion
@@ -40,30 +40,37 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     #region Data
 
-    ListViewItemModel[] data;
+    ListViewItemModel<System.Object>[] data;
     int dataHead = 0;
     int dataTail = 0;
 
+    Dictionary<ListViewItemModel<System.Object>, IListViewItem<System.Object>> map = new Dictionary<ListViewItemModel<System.Object>, IListViewItem<System.Object>>(50);
     #endregion
 
 
 
-    public void Setup(ListViewItemModel[] data)
+    public void Setup(ListViewItemModel<System.Object>[] data)
     {
         ScrollRect.onValueChanged.AddListener(OnDragDetectionPositionChange);
 
         this.data = data;
-
-        DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, this.data.Length * ItemHeight);
-
-        for(int i = 0; i < TargetVisibleItemCount + BufferSize; i++)
+        int Length = data.Length;
+        DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, Length * ItemHeight + (Length - 1) * spacing);
+        List<IListViewItem<System.Object>> comp = new List<IListViewItem<System.Object>>();
+        for (int i = 0; i < TargetVisibleItemCount + BufferSize; i++)
         {
             GameObject itemGO = ItemPool.ItemBorrow();
             itemGO.transform.SetParent(ContentT);
             itemGO.SetActive(true);
             itemGO.transform.localScale = Vector3.one;
-            itemGO.GetComponent<ListViewItem>().Setup(data[dataTail]);
+            var lvItem = itemGO.GetComponent<IListViewItem<System.Object>>();
+            lvItem.Setup(data[dataTail]);
+            comp.Add(lvItem);
             dataTail++;
+        }
+        for (int i = 0; i < data.Length; i++)
+        {
+            map.Add(data[i], comp[i % comp.Count]);
         }
     }
 
@@ -106,23 +113,26 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     void UpdateContentBuffer()
     {
-        if(TopItemOutOfView > BufferSize)
+        if (TopItemOutOfView > BufferSize)
         {
-            if(dataTail >= data.Length)
+            if (dataTail >= data.Length)
             {
                 return;
             }
 
             Transform firstChildT = ContentT.GetChild(0);
             firstChildT.SetSiblingIndex(ContentT.childCount - 1);
-            firstChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataTail]);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - firstChildT.gameObject.GetComponent<ListViewItem>().ItemHeight);
+            //  firstChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataTail]);
+            var model = data[dataTail];
+            var currLvItem = map[model];
+            currLvItem.Setup(model);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - currLvItem.ItemHeight - spacing);
             dataHead++;
             dataTail++;
         }
-        else if(TopItemOutOfView < BufferSize)
+        else if (TopItemOutOfView < BufferSize)
         {
-            if(dataHead <= 0)
+            if (dataHead <= 0)
             {
                 return;
             }
@@ -131,11 +141,24 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
             lastChildT.SetSiblingIndex(0);
             dataHead--;
             dataTail--;
-            lastChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataHead]);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + lastChildT.gameObject.GetComponent<ListViewItem>().ItemHeight);
+            // lastChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataHead]);
+            var model = data[dataHead];
+            var currLvItem = map[model];
+            currLvItem.Setup(model);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + currLvItem.ItemHeight + spacing);
 
         }
     }
-
+    //Diyelim 5 tane obje aktif ilk 5 obje ilk 5 veriye karşılık geliyor.
+    //aşağı scroll yaptığım zaman yukarıya çıkan 1. obje sınırı geçince
+    //aşağı inecek ve 6. veri 1. objeye yazılacak. yani her veri her zaman
+    //aynı objeye denk gelecek.
+    ///
+    /// 
+    /// Pool bize bir item verdiğimizde ona karşılık gelen listviewItem'ı
+    //dönderebilsin. ListViewItem için bir çatımız var ondan ayrı olarak biz
+    //içeriği özel olarak dolduracağız zaten. Oraya UpdateUI metodlarımızı
+    //yazarız ve income değiştiği zaman update edilmesi gerekenler update edilebilir.
+    /// 
     #endregion
 }
