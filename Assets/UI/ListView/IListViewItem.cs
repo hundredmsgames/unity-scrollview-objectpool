@@ -1,6 +1,6 @@
 
-public interface IListViewItem<T> where T : new()
+public interface IListViewItem
 {
-    void Setup(ListViewItemModel<T> model);
+    void Setup(IListViewItemModel model);
     int ItemHeight { get; }
 }

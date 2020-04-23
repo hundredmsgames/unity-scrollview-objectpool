@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 [Serializable]
-public class ListViewItem : MonoBehaviour, IListViewItem<System.Object>
+public class ListViewItem : MonoBehaviour, IListViewItem
 {
 
     [SerializeField] Text itemText;
 
     public int ItemHeight { get { return 100; } }
 
-    public void Setup(ListViewItemModel<System.Object> model)
+    public void Setup(IListViewItemModel model)
     {
-        gameObject.name = ((int)(model.Data)).ToString();
-        itemText.text = ((int)(model.Data)).ToString();
+        var itemModel = (ListViewItemModel) model;
+        gameObject.name = ((int)(itemModel.Data)).ToString();
+        itemText.text = ((int)(itemModel.Data)).ToString();
     }
 
 }

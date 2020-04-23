@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,10 +7,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        ListViewItemModel<System.Object>[] demoData = new ListViewItemModel<System.Object>[DataCount];
+        ListViewItemModel[] demoData = new ListViewItemModel[DataCount];
         for(int i = 0; i < DataCount; i++)
         {
-            demoData[i] = new ListViewItemModel<System.Object>(i + 1);
+            demoData[i] = new ListViewItemModel(i + 1);
         }
 
         listView.Setup(demoData);

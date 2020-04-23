@@ -1,17 +1,19 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 [Serializable]
-public class ListViewItemModel<T> where T : new()
+public class ListViewItemModel : IListViewItemModel
 {
-    public T Data { get { return data; } }
+    public System.Object Data { get { return data; } }
 
-    T data;
+    System.Object data;
 
-    public ListViewItemModel(T data)
+    public ListViewItemModel(System.Object data)
     {
         this.data = data;
+    }
+
+    public int GetItemType()
+    {
+        return 0;
     }
 }

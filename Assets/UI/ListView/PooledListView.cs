@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -40,37 +39,42 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     #region Data
 
-    ListViewItemModel<System.Object>[] data;
+    IListViewItemModel[] data;
     int dataHead = 0;
     int dataTail = 0;
 
-    Dictionary<ListViewItemModel<System.Object>, IListViewItem<System.Object>> map = new Dictionary<ListViewItemModel<System.Object>, IListViewItem<System.Object>>(50);
+    Dictionary<IListViewItemModel, IListViewItem> modelToItem = new Dictionary<IListViewItemModel, IListViewItem>(50);
     #endregion
 
 
 
-    public void Setup(ListViewItemModel<System.Object>[] data)
+    public void Setup(ListViewItemModel[] data)
     {
         ScrollRect.onValueChanged.AddListener(OnDragDetectionPositionChange);
 
         this.data = data;
         int Length = data.Length;
         DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, Length * ItemHeight + (Length - 1) * spacing);
-        List<IListViewItem<System.Object>> comp = new List<IListViewItem<System.Object>>();
+        IListViewItem[][] components = new IListViewItem[TargetVisibleItemCount + BufferSize][];
+
         for (int i = 0; i < TargetVisibleItemCount + BufferSize; i++)
         {
             GameObject itemGO = ItemPool.ItemBorrow();
             itemGO.transform.SetParent(ContentT);
             itemGO.SetActive(true);
             itemGO.transform.localScale = Vector3.one;
-            var lvItem = itemGO.GetComponent<IListViewItem<System.Object>>();
-            lvItem.Setup(data[dataTail]);
-            comp.Add(lvItem);
+            var items = itemGO.GetComponents<IListViewItem>();
+            var itemModel = data[dataTail];
+            int itemType = itemModel.GetItemType();
+            items[itemType].Setup(itemModel);
+            components[i] = items;
             dataTail++;
         }
+
         for (int i = 0; i < data.Length; i++)
         {
-            map.Add(data[i], comp[i % comp.Count]);
+            int itemType = data[i].GetItemType(); 
+            modelToItem.Add(data[i], components[i % components.Length][itemType]);
         }
     }
 
@@ -122,11 +126,10 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
             Transform firstChildT = ContentT.GetChild(0);
             firstChildT.SetSiblingIndex(ContentT.childCount - 1);
-            //  firstChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataTail]);
             var model = data[dataTail];
-            var currLvItem = map[model];
-            currLvItem.Setup(model);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - currLvItem.ItemHeight - spacing);
+            var item = modelToItem[model];
+            item.Setup(model);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - item.ItemHeight - spacing);
             dataHead++;
             dataTail++;
         }
@@ -141,12 +144,10 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
             lastChildT.SetSiblingIndex(0);
             dataHead--;
             dataTail--;
-            // lastChildT.gameObject.GetComponent<ListViewItem>().Setup(data[dataHead]);
             var model = data[dataHead];
-            var currLvItem = map[model];
-            currLvItem.Setup(model);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + currLvItem.ItemHeight + spacing);
-
+            var item = modelToItem[model];
+            item.Setup(model);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + item.ItemHeight + spacing);
         }
     }
     //Diyelim 5 tane obje aktif ilk 5 obje ilk 5 veriye karşılık geliyor.
