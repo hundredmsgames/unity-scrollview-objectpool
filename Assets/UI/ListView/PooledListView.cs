@@ -48,7 +48,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
 
 
-    public void Setup(ListViewItemModel[] data)
+    public void Setup(IListViewItemModel[] data)
     {
         ScrollRect.onValueChanged.AddListener(OnDragDetectionPositionChange);
 
