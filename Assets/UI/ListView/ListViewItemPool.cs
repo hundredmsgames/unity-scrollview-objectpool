@@ -6,6 +6,14 @@ public class ListViewItemPool : MonoBehaviour
     [SerializeField] int PoolSize = 1;
     [SerializeField] GameObject PoolObjectPrefab;
 
+    public int ItemHeight
+    {
+        get
+        {
+            return (int)PoolObjectPrefab.GetComponent<RectTransform>().rect.height;
+        }
+    }
+
     int head = 0;
 
     void Awake()

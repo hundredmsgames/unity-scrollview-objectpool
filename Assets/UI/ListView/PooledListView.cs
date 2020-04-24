@@ -19,7 +19,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     #region Layout Parameters
 
-    float ItemHeight = 1;      // TODO: Replace it with dynamic height
+    float ItemHeight;
     [SerializeField] int BufferSize;
 
     #endregion
@@ -53,10 +53,8 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
         ScrollRect.onValueChanged.AddListener(OnDragDetectionPositionChange);
 
         this.data = data;
+        this.ItemHeight = ItemPool.ItemHeight;
         int length = data.Length;
-        var pooledItemGO = ItemPool.ItemBorrow();
-        ItemHeight = pooledItemGO.GetComponent<IListViewItem>().ItemHeight;
-        ItemPool.ItemReturn(pooledItemGO);
         DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, length * ItemHeight + (length - 1) * spacing);
         IListViewItem[][] components = new IListViewItem[TargetVisibleItemCount + BufferSize][];
 
@@ -96,14 +94,19 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
     /// Thus we can update it or we can do whatever we want.
     /// </summary>
     /// <returns></returns>
-    public IListViewItem[] GetVisibleItems()
+    public KeyValuePair<IListViewItemModel, IListViewItem>[] GetAllItemsInContent()
     {
-        IListViewItem[] items = new IListViewItem[dataTail - dataHead + 1];
+        KeyValuePair<IListViewItemModel, IListViewItem>[] modelItemPairs =
+            new KeyValuePair<IListViewItemModel, IListViewItem>[dataTail - dataHead];
+
         for (int i = dataHead; i < dataTail; ++i)
         {
-            items[i - dataHead] = modelToItem[data[i]];
+            modelItemPairs[i - dataHead] = new KeyValuePair<IListViewItemModel, IListViewItem>(
+                data[i],
+                modelToItem[data[i]]
+            );
         }
-        return items;
+        return modelItemPairs;
     }
 
 
@@ -157,7 +160,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
             var model = data[dataTail];
             var item = modelToItem[model];
             item.Setup(model);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - item.ItemHeight - spacing);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y - ItemHeight - spacing);
             dataHead++;
             dataTail++;
         }
@@ -175,19 +178,9 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
             var model = data[dataHead];
             var item = modelToItem[model];
             item.Setup(model);
-            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + item.ItemHeight + spacing);
+            ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + ItemHeight + spacing);
         }
     }
-    //Diyelim 5 tane obje aktif ilk 5 obje ilk 5 veriye karşılık geliyor.
-    //aşağı scroll yaptığım zaman yukarıya çıkan 1. obje sınırı geçince
-    //aşağı inecek ve 6. veri 1. objeye yazılacak. yani her veri her zaman
-    //aynı objeye denk gelecek.
-    ///
-    /// 
-    /// Pool bize bir item verdiğimizde ona karşılık gelen listviewItem'ı
-    //dönderebilsin. ListViewItem için bir çatımız var ondan ayrı olarak biz
-    //içeriği özel olarak dolduracağız zaten. Oraya UpdateUI metodlarımızı
-    //yazarız ve income değiştiği zaman update edilmesi gerekenler update edilebilir.
-    /// 
+
     #endregion
 }

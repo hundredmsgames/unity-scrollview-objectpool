@@ -15,14 +15,4 @@ public class GameManager : MonoBehaviour
 
         listView.Setup(demoData);
     }
-
-    // FIXME: Don't forget deleting me after debugging
-    void Update()
-    {
-        foreach (ListViewItem i in listView.GetVisibleItems())
-        {
-            Debug.Log(i.gameObject.name);
-        }
-        Debug.Log("-------");
-    }
 }
