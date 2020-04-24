@@ -291,6 +291,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114092207522656296, guid: 47ab8c2b54fac4c6a8377c87fcb81018,
+        type: 3}
+      propertyPath: ItemHeight
+      value: 200
+      objectReference: {fileID: 0}
     - target: {fileID: 114495308304118532, guid: 47ab8c2b54fac4c6a8377c87fcb81018,
         type: 3}
       propertyPath: m_UiScaleMode
@@ -409,7 +414,7 @@ PrefabInstance:
     - target: {fileID: 224799292906260038, guid: 47ab8c2b54fac4c6a8377c87fcb81018,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.00012044403
+      value: 0.00013188335
       objectReference: {fileID: 0}
     - target: {fileID: 224827492830749662, guid: 47ab8c2b54fac4c6a8377c87fcb81018,
         type: 3}

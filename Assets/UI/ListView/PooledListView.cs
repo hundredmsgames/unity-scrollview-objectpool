@@ -19,7 +19,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     #region Layout Parameters
 
-    [SerializeField] float ItemHeight = 1;      // TODO: Replace it with dynamic height
+    float ItemHeight = 1;      // TODO: Replace it with dynamic height
     [SerializeField] int BufferSize;
 
     #endregion
@@ -54,6 +54,9 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
         this.data = data;
         int length = data.Length;
+        var pooledItemGO = ItemPool.ItemBorrow();
+        ItemHeight = pooledItemGO.GetComponent<IListViewItem>().ItemHeight;
+        ItemPool.ItemReturn(pooledItemGO);
         DragDetectionT.sizeDelta = new Vector2(DragDetectionT.sizeDelta.x, length * ItemHeight + (length - 1) * spacing);
         IListViewItem[][] components = new IListViewItem[TargetVisibleItemCount + BufferSize][];
 
@@ -73,7 +76,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
         for (int i = 0; i < length; i++)
         {
-            int itemType = data[i].GetItemType(); 
+            int itemType = data[i].GetItemType();
             modelToItem.Add(data[i], components[i % components.Length][itemType]);
         }
     }
@@ -96,7 +99,7 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
     public IListViewItem[] GetVisibleItems()
     {
         IListViewItem[] items = new IListViewItem[dataTail - dataHead + 1];
-        for(int i = dataHead; i <= dataTail; ++i)
+        for (int i = dataHead; i < dataTail; ++i)
         {
             items[i - dataHead] = modelToItem[data[i]];
         }

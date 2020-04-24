@@ -8,12 +8,14 @@ public class ListViewItem : MonoBehaviour, IListViewItem
 
     [SerializeField] Text itemText;
 
-    public int ItemHeight { get { return 100; } }
+    //We need to think about which object will give us the correct size
+    public int ItemHeight { get { return (int)GetComponent<RectTransform>().rect.height; } }
 
     public void Setup(IListViewItemModel model)
     {
-        var itemModel = (ListViewItemModel) model;
-        gameObject.name = ((int)(itemModel.Data)).ToString();
+        //  Debug.Log(height);
+        var itemModel = (ListViewItemModel)model;
+        
         itemText.text = ((int)(itemModel.Data)).ToString();
     }
 
