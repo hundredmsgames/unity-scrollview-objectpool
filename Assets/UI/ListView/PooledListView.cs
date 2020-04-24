@@ -115,6 +115,9 @@ public class PooledListView : MonoBehaviour, IDragHandler, IBeginDragHandler, IE
 
     public void OnDragDetectionPositionChange(Vector2 dragNormalizePos)
     {
+		if(Input.touchCount > 1)
+			return;
+		
         float dragDelta = DragDetectionT.anchoredPosition.y - dragDetectionAnchorPreviousY;
 
         ContentT.anchoredPosition = new Vector2(ContentT.anchoredPosition.x, ContentT.anchoredPosition.y + dragDelta);
